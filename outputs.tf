@@ -1,6 +1,7 @@
 locals {
   redshift_route_table_ids = aws_route_table.redshift[*].id
-  public_route_table_ids   = aws_route_table.public[*].id
+  # When using default route table for public, return the default RT ID; otherwise return created public RT IDs
+  public_route_table_ids   = var.use_default_route_table_for_public ? (local.create_vpc ? [aws_vpc.this[0].default_route_table_id] : []) : aws_route_table.public[*].id
   private_route_table_ids  = aws_route_table.private[*].id
 }
 

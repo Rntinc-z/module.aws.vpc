@@ -162,9 +162,6 @@ locals {
 
   # When using default route table for public subnets, don't create separate public route tables
   num_public_route_tables = var.use_default_route_table_for_public ? 0 : (var.create_multiple_public_route_tables ? local.len_public_subnets : 1)
-  
-  # Determine which route table to use for public subnets
-  public_route_table_ids = var.use_default_route_table_for_public ? [aws_vpc.this[0].default_route_table_id] : aws_route_table.public[*].id
 }
 
 resource "aws_subnet" "public" {
