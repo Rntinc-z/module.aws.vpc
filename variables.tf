@@ -314,6 +314,12 @@ variable "create_multiple_public_route_tables" {
   default     = false
 }
 
+variable "use_default_route_table_for_public" {
+  description = "When true, public subnets will use the VPC's default route table instead of creating a separate public route table. This is useful when importing existing VPCs that use the default route table for public routing. Default: `false`"
+  type        = bool
+  default     = false
+}
+
 variable "public_subnet_ipv6_prefixes" {
   description = "Assigns IPv6 public subnet id based on the Amazon provided /56 prefix base 10 integer (0-256). Must be of equal length to the corresponding IPv4 subnet list"
   type        = list(string)

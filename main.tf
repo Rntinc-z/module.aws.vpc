@@ -160,7 +160,11 @@ resource "aws_vpc_dhcp_options_association" "this" {
 locals {
   create_public_subnets = local.create_vpc && local.len_public_subnets > 0
 
-  num_public_route_tables = var.create_multiple_public_route_tables ? local.len_public_subnets : 1
+  # When using default route table for public subnets, don't create separate public route tables
+  num_public_route_tables = var.use_default_route_table_for_public ? 0 : (var.create_multiple_public_route_tables ? local.len_public_subnets : 1)
+  
+  # Determine which route table to use for public subnets
+  public_route_table_ids = var.use_default_route_table_for_public ? [aws_vpc.this[0].default_route_table_id] : aws_route_table.public[*].id
 }
 
 resource "aws_subnet" "public" {
@@ -195,7 +199,8 @@ resource "aws_subnet" "public" {
 }
 
 resource "aws_route_table" "public" {
-  count = local.create_public_subnets ? local.num_public_route_tables : 0
+  # Don't create public route tables when using default route table
+  count = local.create_public_subnets && !var.use_default_route_table_for_public ? local.num_public_route_tables : 0
 
   region = var.region
 
@@ -214,7 +219,8 @@ resource "aws_route_table" "public" {
 }
 
 resource "aws_route_table_association" "public" {
-  count = local.create_public_subnets ? local.len_public_subnets : 0
+  # Don't create associations when using default route table (subnets use default RT automatically)
+  count = local.create_public_subnets && !var.use_default_route_table_for_public ? local.len_public_subnets : 0
 
   region = var.region
 
@@ -223,7 +229,8 @@ resource "aws_route_table_association" "public" {
 }
 
 resource "aws_route" "public_internet_gateway" {
-  count = local.create_public_subnets && var.create_igw ? local.num_public_route_tables : 0
+  # Don't create route when using default route table (route should be on default RT)
+  count = local.create_public_subnets && var.create_igw && !var.use_default_route_table_for_public ? local.num_public_route_tables : 0
 
   region = var.region
 
@@ -237,7 +244,8 @@ resource "aws_route" "public_internet_gateway" {
 }
 
 resource "aws_route" "public_internet_gateway_ipv6" {
-  count = local.create_public_subnets && var.create_igw && var.enable_ipv6 ? local.num_public_route_tables : 0
+  # Don't create route when using default route table
+  count = local.create_public_subnets && var.create_igw && var.enable_ipv6 && !var.use_default_route_table_for_public ? local.num_public_route_tables : 0
 
   region = var.region
 
