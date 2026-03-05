@@ -52,14 +52,14 @@ resource "aws_vpc" "this" {
   region = var.region
 
   cidr_block          = var.use_ipam_pool ? null : var.cidr
-  ipv4_ipam_pool_id   = var.ipv4_ipam_pool_id
-  ipv4_netmask_length = var.ipv4_netmask_length
+  ipv4_ipam_pool_id   = var.use_ipam_pool ? var.ipv4_ipam_pool_id : null
+  ipv4_netmask_length = var.use_ipam_pool ? var.ipv4_netmask_length : null
 
   assign_generated_ipv6_cidr_block     = var.enable_ipv6 && !var.use_ipam_pool ? true : null
-  ipv6_cidr_block                      = var.ipv6_cidr
+  ipv6_cidr_block                      = var.use_ipam_pool || var.ipv6_ipam_pool_id != null ? var.ipv6_cidr : null
   ipv6_ipam_pool_id                    = var.ipv6_ipam_pool_id
-  ipv6_netmask_length                  = var.ipv6_netmask_length
-  ipv6_cidr_block_network_border_group = var.ipv6_cidr_block_network_border_group
+  ipv6_netmask_length                  = var.ipv6_ipam_pool_id != null ? var.ipv6_netmask_length : null
+  ipv6_cidr_block_network_border_group = var.enable_ipv6 && !var.use_ipam_pool ? var.ipv6_cidr_block_network_border_group : null
 
   instance_tenancy                     = var.instance_tenancy
   enable_dns_hostnames                 = var.enable_dns_hostnames
